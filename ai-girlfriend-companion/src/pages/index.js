@@ -4,10 +4,11 @@ export default function Home() {
   const [chatHistory, setChatHistory] = useState([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleInput = async () => {
-    let localChatHistory = chatHistory
-    localChatHistory.push({ sender: "Me", text: inputText })
+    let localChatHistory = [...chatHistory];
+    localChatHistory.push({ sender: "Me", text: inputText });
     setChatHistory(localChatHistory);
     setInputText("");
     setIsLoading(true);
@@ -22,46 +23,52 @@ export default function Home() {
       });
 
       const { reply } = await response.json();
-      console.log("chatHistory 1 ", chatHistory);
-      localChatHistory.push({ sender: "Senorita", text: reply })
-        setChatHistory(localChatHistory);
+      localChatHistory.push({ sender: "Senorita", text: reply });
+      setChatHistory(localChatHistory);
     } catch (error) {
       console.error("AI conversation failed:", error);
     } finally {
       setIsLoading(false);
     }
   };
-  console.log("chatHistory ", chatHistory);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 text-black">
+    <div className={`min-h-screen flex flex-col justify-center items-center ${isDarkMode ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}`}>
+      <button
+        onClick={toggleDarkMode}
+        className={`absolute top-4 right-4 p-2 rounded-full ${isDarkMode ? "bg-gray-600 text-white" : "bg-gray-200 text-black"}`}
+      >
+        {isDarkMode ? "☀️" : "🌕"}
+      </button>
       <h1 className="text-3xl font-semibold mb-6">AI Girlfriend Companion</h1>
-      <div className="chat-container bg-white rounded-lg shadow-md p-4 w-80 h-96 overflow-y-auto">
+      <div className={`chat-container ${isDarkMode ? "bg-gray-700" : "bg-white"} rounded-lg shadow-md p-4 w-80 h-96 overflow-y-auto`}>
         {chatHistory.map((message, index) => (
           <div
             key={index}
-            className={`chat-message mb-2 ${
-              message.sender === "Senorita" ? "bg-blue-100" : "bg-green-100 self-end"
-            }`}
+            className={`chat-message mb-2 p-2 rounded ${message.sender === "Senorita" ? (isDarkMode ? "bg-blue-900" : "bg-blue-100") : (isDarkMode ? "bg-green-900 self-end" : "bg-green-100 self-end")}`}
           >
-            <span className="block font-semibold text-black">
+            <span className={`block font-semibold ${isDarkMode ? "text-white" : "text-black"}`}>
               {message.sender === "Senorita" ? "Senorita" : "Me"}:
             </span>{" "}
             {message.text}
           </div>
         ))}
       </div>
-      <div className="input-container mt-4 flex items-center">
+      <div className="input-container mt-4 flex items-center w-80">
         <input
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Start a conversation..."
-          className="flex-grow border rounded-l-md p-2"
+          className={`flex-grow border rounded-l-md p-2 ${isDarkMode ? "bg-gray-600 text-white border-gray-500" : "bg-white text-black border-gray-300"}`}
         />
         <button
           onClick={handleInput}
-          className="bg-blue-500 text-white px-4 py-2 rounded-r-md disabled:bg-gray-300"
+          className={`bg-blue-500 text-white px-4 py-2 rounded-r-md ${isLoading ? "bg-gray-300" : "bg-blue-500"} ${isLoading ? "cursor-not-allowed" : ""}`}
           disabled={isLoading}
         >
           {isLoading ? "Sending..." : "Send"}
